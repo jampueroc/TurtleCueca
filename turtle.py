@@ -5,13 +5,18 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
 
+state = None
+
 posI=posD=0
 
 def dance():
-	pub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size=10)
-	sub = rospy.Subscriber('joint_states', JointState,callback)
 	rospy.init_node('dance', anonymous=True)
+	sub = rospy.Subscriber('joint_states', JointState,callback)
+	pub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size=10)
 	rate = rospy.Rate(10) # 10hz
+	while state == None :
+		print("waiting")
+		rate.sleep()
 	cuecaIntro(pub)
 	while not rospy.is_shutdown():
 		rate.sleep()
@@ -23,7 +28,7 @@ def cuecaIntro(pub):
 
 def caminar(pub):
 	twist = Twist()
-	print state.position
+	global state
 	posI=state.position[0]
 	posD=state.position[1]
 	#for i in range (100):
@@ -36,12 +41,13 @@ def caminar(pub):
 
 def darVuelta(pub):
 	twist=Twist()
+	global state
 	posI=state.position[0]
 	posD=state.position[1]
-	while abs(state.position[0]-posI)<10.5 and abs(state.position[1]-posD)<10.5:
-		twist.angular.z=0.32
+	while abs(state.position[0]-posI)<10.4 and abs(state.position[1]-posD)<10.5:
+		twist.angular.z=0.64
 		pub.publish(twist)
-		rospy.sleep(0.1)
+		rospy.sleep(0.05)
 		twist.angular.z=0
 		pub.publish(twist)	
 
